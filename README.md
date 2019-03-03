@@ -1,0 +1,2 @@
+# OpenSiv3DSimpleGUISliderAndButton01
+OpenSiv3DのSimpleGUIでいい感じのスライダーをつくる
