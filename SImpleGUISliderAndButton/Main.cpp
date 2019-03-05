@@ -39,7 +39,7 @@ void Main()
 	while (System::Update())
 	{
 		
-		//デバック用
+		//いつもの
 
 		font(Cursor::Pos()).draw(20, 560, ColorF(0.6));
 
@@ -70,12 +70,12 @@ void Main()
 		{
 			block_r = rad;
 		}
-		else rad = block_r;
+		else rad = (int)block_r;
 
 
 		//移動計算
-		if (block_vx != 0) block_x += block_vx;
-		else if (block_vy != 0)block_y += block_vy;
+		if (block_vx != 0) block_x += (int)block_vx;
+		else if (block_vy != 0)block_y += (int)block_vy;
 
 		//画面外に出たら戻るだけ
 		if (!RectF(block_x, block_y, block_w, block_h).rotated(ToRadians(block_r)).intersects(Rect(Window::Size()))) 
@@ -87,29 +87,52 @@ void Main()
 		RectF(block_x, block_y, block_w, block_h).rotated(ToRadians(block_r)).draw(Palette::White);
 	
 
-		BlockGUIheader.pos = BlockGUIBox.pos;
+		BlockGUIBox.pos = BlockGUIheader.pos;
 
-		if (objectoptions[objectIndex] == U"Block")
-		{
-			BlockGUIBox.x = 400;
+		//ウィンドウの持ち運び
+
+		if (BlockGUIheader.leftClicked() && objectoptions[objectIndex] == U"Block") {
+			BlockGUIgrabbed = true;
 		}
-		else if(objectoptions[objectIndex] == U"None")
-		{
-			BlockGUIBox.x = 2000;
+		else if (MouseL.up()) {
+			BlockGUIgrabbed = false;
 		}
+		else if (BlockGUIgrabbed) {
+			BlockGUIheader.pos += Cursor::DeltaF();
+
+			//ヘッダーが画面外に出ないようにする
+			BlockGUIheader.x = Clamp(BlockGUIheader.x, 0.0, 400.0);
+			BlockGUIheader.y = Clamp(BlockGUIheader.y, 0.0, 570.0);
+			BlockGUIBox.pos = BlockGUIheader.pos;
+			
+		}
+
+		
+		
+
+		//ラジオボタン
+
+		if (objectoptions[objectIndex] == U"Block" && BlockGUIheader.pos.x == 2000)
+		{
+			BlockGUIheader.x = 400;
+		}
+		else if(objectoptions[objectIndex] == U"None" && BlockGUIheader.pos.x != 2000)
+		{
+			BlockGUIheader.x = 2000;
+		}
+		
+		itemfont(U"Object:").draw(402, 60, Palette::Black);
+		SimpleGUI::RadioButtons(objectIndex, objectoptions, Vec2(400, 90), 100);
+
 
 		BlockGUIBox.draw(Palette::Silver);
 		BlockGUIheader.draw(Palette::White);
 		datafont(U"BlockGUI").drawAt(BlockGUIheader.center(), Palette::Black);
 
 
+
+
 		//GUIレイアウト＆処理
-
-
-		//ラジオボタン
-		itemfont(U"Object:").draw(402, 60, Palette::Black);
-		SimpleGUI::RadioButtons(objectIndex, objectoptions, Vec2(400, 90), 100);
-
 
 		//Rectの要素を決定するスライダーとボタン
 
@@ -125,11 +148,13 @@ void Main()
 		{
 			block_w++;
 		}
-		datafont((int)block_w).draw(BlockGUIBox.pos + Vec2(320, 40), Palette::Black);
+		datafont(U"{:.0f}"_fmt(block_w)).draw(BlockGUIBox.pos + Vec2(320, 40), Palette::Black);
 		if (SimpleGUI::Button(U"0", BlockGUIBox.pos + Vec2(365, 40), 20))
 		{
 			block_w = 0;
 		}
+		//intにキャストして代入して補正
+		block_w = (int)block_w;
 		
 		//ここまで----------------------------------------------------------------------
 
@@ -146,12 +171,13 @@ void Main()
 		{
 			block_h++;
 		}
-		datafont((int)block_h).draw(BlockGUIBox.pos + Vec2(320, 80), Palette::Black);
+		datafont(U"{:.0f}"_fmt(block_h)).draw(BlockGUIBox.pos + Vec2(320, 80), Palette::Black);
 		if (SimpleGUI::Button(U"0", BlockGUIBox.pos + Vec2(365, 80), 20))
 		{
 			block_h = 0;
 		}
-
+		//intにキャストして代入して補正
+		block_h = (int)block_h;
 
 		itemfont(U"rad:").draw(BlockGUIBox.pos + Vec2(2, 120), Palette::Black);
 		if (SimpleGUI::Button(U"-", BlockGUIBox.pos + Vec2(65, 120), 20))
@@ -232,19 +258,10 @@ void Main()
 
 		
 
+		
 
 
-	/*	if (BlockGUIheader.leftClicked()) {
-				BlockGUIgrabbed = true;
-			}
-			else if (MouseL.up()) {
-				BlockGUIgrabbed = false;
-			}
-			else if (BlockGUIgrabbed) {
-				BlockGUIBox.pos += Cursor::DeltaF();
-				BlockGUIheader.pos = BlockGUIBox.pos;
-			}*/
-
+		
 
 	}
 }
